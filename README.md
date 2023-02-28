@@ -4,42 +4,56 @@
 
 Run with dev mode and truststore
 
+```
 oc get secret store-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.crt}' | base64 -d > storeca.crt
+```
+```
 oc get secret datacentre-cluster-cluster-ca-cert -o jsonpath='{.data.ca\.crt}' | base64 -d > datacentreca.crt
-
+```
+```
 keytool -import -trustcacerts -alias root -file shopca.crt -keystore shopTruststore.jks -storepass password -noprompt
-
+```
+```
 keytool -import -trustcacerts -alias root -file datacentreca.crt -keystore datacentrecaTruststore.jks -storepass password -noprompt
-
-
+```
+```
 keytool -list -v -keystore shopTrustStore.jks
-
+```
+```
 quarkus dev -Djavax.net.ssl.trustStore=shopTruststore.jks -Djavax.net.ssl.trustStorePassword=password
-
+```
+```
 java  -Djavax.net.ssl.trustStore=shopTruststore.jks -Djavax.net.ssl.trustStorePassword=password -jar target/quarkus-app/quarkus-run.jar
-
+```
+```
 oc create secret generic shoptruststore --from-file=shopTrustStore.jks
-
+```
+```
 oc exec -it datacentre-cluster-kafka-0 -- /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --from-beginning \
   --topic shop-source.product
-
+```
 
 add 
-
+```
   ssl.truststore.location=/Users/pprosser/projects/price/shopTruststore.jks \
   ssl.truststore.password=password
+```
+  to producer.properties
 
-  to producer.properties 
+
+```
 /Users/pprosser/Downloads/kafka_2.13-3.3.1.redhat-00008/bin/kafka-console-consumer.sh \
     --bootstrap-server store-cluster-kafka-bootstrap-store.apps.cluster-fqgg4.fqgg4.sandbox3159.opentlc.com:443 \
     --from-beginning \
     --topic product \
     --consumer.config /Users/pprosser/projects/price/producer.properties
-
+```
+```
 oc create secret generic shopcert --from-file=storeca.crt
-
+```
+```
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaMirrorMaker2
 metadata:
@@ -79,8 +93,7 @@ spec:
       topicsPattern: product
   replicas: 1
   version: 3.3.1
-
-
+```
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
